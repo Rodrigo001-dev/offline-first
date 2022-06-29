@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, Alert } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 import { Menu, MenuTypeProps } from '../../components/Menu';
@@ -8,11 +8,28 @@ import { Button } from '../../components/Button';
 
 import { Container, Title, Input, Form, FormTitle } from './styles';
 
+import { database } from '../../database';
+import { SkillModel } from '../../database/model/skillModel';
+
 export function Home() {
   const [type, setType] = useState<MenuTypeProps>("soft");
   const [name, setName] = useState('');
 
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  async function handleSave() {
+    // tudo que for realizado para a modificação de dados(insert, update, delete)
+    // ter que ser feito através do write
+    await database.write(async () => {
+      await database.get<SkillModel>('skills').create(data => {
+        data.name = name,
+        data.type = type
+      })
+    });
+
+    Alert.alert("Created!");
+    bottomSheetRef.current?.collapse();
+  };
 
   return (
     <Container>
@@ -50,7 +67,7 @@ export function Home() {
 
           <Button
             title="Save"
-            onPress={() => { }}
+            onPress={handleSave}
           />
         </Form>
       </BottomSheet>
