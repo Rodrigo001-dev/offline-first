@@ -1,0 +1,1 @@
+// schema é a instrução que eu vou dar para o watermelon criar as tabelas
