@@ -35,6 +35,15 @@ export function Home() {
     fetchData();
   };
 
+  async function handleRemove(item: SkillModel) {
+    await database.write(async () => {
+      await item.destroyPermanently();
+    });
+
+    fetchData();
+    Alert.alert("Deleted!");
+  };
+
   async function fetchData() {
     const skillCollection = database.get<SkillModel>('skills');
     const response = await skillCollection
@@ -66,7 +75,7 @@ export function Home() {
           <Skill
             data={item}
             onEdit={() => { }}
-            onRemove={() => { }}
+            onRemove={() => handleRemove(item)}
           />
         )}
       />
