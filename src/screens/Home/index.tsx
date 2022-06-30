@@ -17,20 +17,36 @@ export function Home() {
   const [type, setType] = useState<MenuTypeProps>("soft");
   const [name, setName] = useState('');
   const [skills, setSkills] = useState<SkillModel[]>([]);
+  // vai armazenar qual skill eu quero editar
+  const [skill, setSkill] = useState<SkillModel>({} as SkillModel);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   async function handleSave() {
-    // tudo que for realizado para a modificação de dados(insert, update, delete)
-    // ter que ser feito através do write
-    await database.write(async () => {
-      await database.get<SkillModel>('skills').create(data => {
-        data.name = name,
-        data.type = type
-      })
-    });
+    if (skill.id) {
+      await database.write(async () => {
+        await skill.update(data => {
+          data.name = name,
+          data.type = type
+        });
+      });
 
-    Alert.alert("Created!");
+      Alert.alert("Updated!");
+      setSkill({} as SkillModel);
+    } else {
+      // tudo que for realizado para a modificação de dados(insert, update, delete)
+      // ter que ser feito através do write
+      await database.write(async () => {
+        await database.get<SkillModel>('skills').create(data => {
+          data.name = name,
+          data.type = type
+        })
+      });
+
+      Alert.alert("Created!");
+    }
+
+    
     bottomSheetRef.current?.collapse();
     fetchData();
   };
@@ -56,6 +72,12 @@ export function Home() {
     setSkills(response);
   };
 
+  async function handleEdit(item: SkillModel) {
+    setSkill(item);
+    setName(item.name);
+    bottomSheetRef.current?.expand();
+  };
+
   useEffect(() => {
     fetchData();
   }, [type]);
@@ -74,7 +96,7 @@ export function Home() {
         renderItem={({ item }) => (
           <Skill
             data={item}
-            onEdit={() => { }}
+            onEdit={() => handleEdit(item)}
             onRemove={() => handleRemove(item)}
           />
         )}
@@ -86,7 +108,9 @@ export function Home() {
         snapPoints={['1%', '35%']}
       >
         <Form>
-          <FormTitle>New</FormTitle>
+          <FormTitle>
+            {skill.id ? 'Edit' : 'New'}
+          </FormTitle>
 
           <Input
             placeholder="New skill..."
