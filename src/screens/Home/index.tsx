@@ -10,6 +10,8 @@ import { Container, Title, Input, Form, FormTitle } from './styles';
 
 import { database } from '../../database';
 import { SkillModel } from '../../database/model/skillModel';
+// o Q é para aplicar filtros dentro da query
+import { Q } from '@nozbe/watermelondb';
 
 export function Home() {
   const [type, setType] = useState<MenuTypeProps>("soft");
@@ -35,13 +37,19 @@ export function Home() {
 
   async function fetchData() {
     const skillCollection = database.get<SkillModel>('skills');
-    const response = await skillCollection.query().fetch();
+    const response = await skillCollection
+    .query(
+      // filtrando pelo type onde o type seja igual ao type do meu estado
+      Q.where('type', type)
+    )
+    .fetch();
+
     setSkills(response);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [type]);
 
   return (
     <Container>
