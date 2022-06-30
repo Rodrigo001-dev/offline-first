@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FlatList, Alert } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 
@@ -14,6 +14,7 @@ import { SkillModel } from '../../database/model/skillModel';
 export function Home() {
   const [type, setType] = useState<MenuTypeProps>("soft");
   const [name, setName] = useState('');
+  const [skills, setSkills] = useState<SkillModel[]>([]);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -29,7 +30,18 @@ export function Home() {
 
     Alert.alert("Created!");
     bottomSheetRef.current?.collapse();
+    fetchData();
   };
+
+  async function fetchData() {
+    const skillCollection = database.get<SkillModel>('skills');
+    const response = await skillCollection.query().fetch();
+    setSkills(response);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Container>
@@ -40,8 +52,8 @@ export function Home() {
       />
 
       <FlatList
-        data={[]}
-        keyExtractor={item => item}
+        data={skills}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <Skill
             data={item}
